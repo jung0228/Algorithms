@@ -1,0 +1,371 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "*args & __iter__",
+      "provenance": [],
+      "authorship_tag": "ABX9TyPPGO3c+mpVBuwviqIFnXnJ",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/jung0228/Algorithms/blob/main/args%26iter\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "오 파이썬에 어느정도 익숙해졌다고 생각했는데 최근 새로운 기능들을 계속해서 봐서 아직 많이 부족하다는 것을 느꼈다. 가변인자 같은 경우에는 지나가면서 몇번 본 적이 있지만 __iter__의 경우에는 태어나서 처음본다. 클래스가 순회 가능하다는 놀라운 사실을 발견한 순간이다."
+      ],
+      "metadata": {
+        "id": "kv5afQsjS9gJ"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 가변인자\n",
+        "가변인자는 내가 함수를 사용할 때 몇개의 변수를 줄 지 모를때 사용한다. 변수 1개를 넣어도 되지만 변수가 갑자기 40개 들어오는 경우도 있을 것이다. 그럴 때 사용하는 것이 가변인자 *이다. \n",
+        "\n",
+        "\n",
+        "우선, 파이썬 내장 list에서 pop을 사용하는 경우는 생각해보자. 우리는 pop을 사용할때 변수를 주지 않을 수도 있다. 또 -1과 같은 변수를 줄 수도 있다. 이러한 경우 가변인자를 사용하지 않고 해결이 어렵다. 하지만 가변인자를 사용해주면 이러한 예외 경우를 쉽게 처리해줄 수 있게 된다. \n",
+        "\n",
+        "가변인자를 LinkedList에서 어떻게 사용하는지 관찰해보자. \n",
+        "\n",
+        "가변인자를 사용할 함수는 pop get 이다."
+      ],
+      "metadata": {
+        "id": "9SLedMjNU-vD"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "id": "nCaCYNyvSxDR"
+      },
+      "outputs": [],
+      "source": [
+        "class Node:\n",
+        "  def __init__(self, item, next):\n",
+        "    self.item = item\n",
+        "    self.next = next"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "class CircularLinkedList:\n",
+        "  def __init__(self):\n",
+        "    self.__tail = Node(\"dummy\", None)\n",
+        "    self.__tail.next = self.__tail\n",
+        "    self.__numItems = 0\n",
+        "\n",
+        "  def append(self, x):\n",
+        "    print(f\"{x} 추가\")\n",
+        "    newNode = Node(x, self.__tail.next)\n",
+        "    self.__tail.next = newNode\n",
+        "    self.__tail = newNode\n",
+        "    self.__numItems += 1\n",
+        "\n",
+        "  def __iNode(self, i):\n",
+        "    if i == -1:\n",
+        "      return self.__tail.next\n",
+        "    else:\n",
+        "      head = self.__tail.next\n",
+        "      curr = head.next\n",
+        "      for idx in range(i):\n",
+        "        curr = curr.next\n",
+        "    return curr\n",
+        "\n",
+        "  def isEmpty(self):\n",
+        "    return (self.__numItems == 0)\n",
+        "\n",
+        "  def pop(self, *args) -> int:\n",
+        "    #인자가 없거나 -1이면 맨 끝 노드를 알려주자.\n",
+        "    if self.isEmpty():\n",
+        "      print(\"리스트가 비어있습니다.\")\n",
+        "      return None\n",
+        "    # 맨 마지막 노드\n",
+        "    if (len(args) == 0 or args[0] == -1):\n",
+        "      i = self.__numItems - 1\n",
+        "    else:\n",
+        "      i = args[0]\n",
+        "    \n",
+        "    #아래는 똑같다.\n",
+        "    if(i>=0 and i <= self.__numItems - 1):\n",
+        "      print(f\"pop {i} index!!\")\n",
+        "      prev = self.__iNode(i)\n",
+        "      curr = prev.next\n",
+        "      item = curr.item\n",
+        "      prev.next = curr.next\n",
+        "      self.__numItems -= 1\n",
+        "      return item\n",
+        "    else:\n",
+        "      print(\"out of index!!\")\n",
+        "      return None\n",
+        "\n",
+        "  def printNode(self):\n",
+        "    head = self.__tail.next\n",
+        "    curr = head.next\n",
+        "    for i in range(self.__numItems):\n",
+        "      print(curr.item, end=\" \")\n",
+        "      curr = curr.next"
+      ],
+      "metadata": {
+        "id": "Lw0b-KU_W18B"
+      },
+      "execution_count": 9,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def main():\n",
+        "  test_list = CircularLinkedList()\n",
+        "  print(\"\\n\")\n",
+        "\n",
+        "\n",
+        "  test_list.append(10)\n",
+        "  test_list.append(29)\n",
+        "  test_list.append(43)\n",
+        "\n",
+        "  test_list.printNode()\n",
+        "  print(\"\\n\\n\")\n",
+        "\n",
+        "\n",
+        "  test_list.pop(0)\n",
+        "  test_list.printNode()\n",
+        "  print(\"\\n\\n\")\n",
+        "\n",
+        "  test_list.pop(-1)\n",
+        "  test_list.printNode()\n",
+        "  print(\"\\n\\n\")\n",
+        "\n",
+        "  test_list.pop()\n",
+        "  test_list.printNode()\n",
+        "  print(\"\\n\\n\")\n",
+        "\n",
+        "main()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "cAh9RGDEZiKW",
+        "outputId": "020d8b3f-d378-4f62-cccd-74d84adf8cf3"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "\n",
+            "10 추가\n",
+            "29 추가\n",
+            "43 추가\n",
+            "10 29 43 \n",
+            "\n",
+            "\n",
+            "pop 0 index!!\n",
+            "10 43 \n",
+            "\n",
+            "\n",
+            "pop 1 index!!\n",
+            "43 \n",
+            "\n",
+            "\n",
+            "pop 0 index!!\n",
+            "\n",
+            "\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 순회자\n",
+        "### 순회자는 Node를 파이썬에 내장된 리스트처럼 사용할 수 있게 해준다. \n",
+        "### 순회자는 __ iter__ 를 이용해서 구현해준다.\n",
+        "\n",
+        "\n",
+        "```\n",
+        "def __iter__(self):\n",
+        "  return CircularLinkedListIterator(self)\n",
+        "\n",
+        "class CircularLinkedListIterator:\n",
+        "  def __init__(self, alist):\n",
+        "    self.__head = alist.getNode(-1)\n",
+        "    self.iterPosition = self.__head.next\n",
+        "  def __next__(self):\n",
+        "    if self.iterPosition == self.__head:\n",
+        "      raise StopIteration\n",
+        "    else:\n",
+        "      item = self.iterPosition.item\n",
+        "      self.iterPosition = self.iterPosision.next\n",
+        "      return item\n",
+        "```\n",
+        "다음과 같이 생겼다. 원리는 나도 잘 모르겠다. 그냥 외우자 ㅎㅎ\n"
+      ],
+      "metadata": {
+        "id": "PifG-CmbaLdl"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "class CircularLinkedList:\n",
+        "  def __init__(self):\n",
+        "    self.__tail = Node(\"dummy\", None)\n",
+        "    self.__tail.next = self.__tail\n",
+        "    self.__numItems = 0\n",
+        "\n",
+        "  def append(self, x):\n",
+        "    print(f\"{x} 추가\")\n",
+        "    newNode = Node(x, self.__tail.next)\n",
+        "    self.__tail.next = newNode\n",
+        "    self.__tail = newNode\n",
+        "    self.__numItems += 1\n",
+        "\n",
+        "  def iNode(self, i):\n",
+        "    if i == -1:\n",
+        "      return self.__tail.next\n",
+        "    else:\n",
+        "      head = self.__tail.next\n",
+        "      curr = head.next\n",
+        "      for idx in range(i):\n",
+        "        curr = curr.next\n",
+        "    return curr\n",
+        "\n",
+        "  def isEmpty(self):\n",
+        "    return (self.__numItems == 0)\n",
+        "\n",
+        "  def pop(self, *args) -> int:\n",
+        "    #인자가 없거나 -1이면 맨 끝 노드를 알려주자.\n",
+        "    if self.isEmpty():\n",
+        "      print(\"리스트가 비어있습니다.\")\n",
+        "      return None\n",
+        "    # 맨 마지막 노드\n",
+        "    if (len(args) == 0 or args[0] == -1):\n",
+        "      i = self.__numItems - 1\n",
+        "    else:\n",
+        "      i = args[0]\n",
+        "    \n",
+        "    #아래는 똑같다.\n",
+        "    if(i>=0 and i <= self.__numItems - 1):\n",
+        "      print(f\"pop {i} index!!\")\n",
+        "      prev = self.iNode(i)\n",
+        "      curr = prev.next\n",
+        "      item = curr.item\n",
+        "      prev.next = curr.next\n",
+        "      self.__numItems -= 1\n",
+        "      return item\n",
+        "    else:\n",
+        "      print(\"out of index!!\")\n",
+        "      return None\n",
+        "\n",
+        "  # def printNode(self):\n",
+        "  #   head = self.__tail.next\n",
+        "  #   curr = head.next\n",
+        "  #   for i in range(self.__numItems):\n",
+        "  #     print(curr.item, end=\" \")\n",
+        "  #     curr = curr.next\n",
+        "  def printNode(self):\n",
+        "    for i in self:\n",
+        "      print(i, end=\" \")\n",
+        "\n",
+        "  def __iter__(self):\n",
+        "    return CircularLinkedListIterator(self)\n",
+        "\n",
+        "class CircularLinkedListIterator:\n",
+        "  def __init__(self, alist):\n",
+        "    self.__head = alist.iNode(-1)\n",
+        "    self.iterPosition = self.__head.next\n",
+        "  def __next__(self):\n",
+        "    if self.iterPosition == self.__head:\n",
+        "      raise StopIteration\n",
+        "    else:\n",
+        "      item = self.iterPosition.item\n",
+        "      self.iterPosition = self.iterPosition.next\n",
+        "      return item"
+      ],
+      "metadata": {
+        "id": "9qEfkrEyZv7-"
+      },
+      "execution_count": 27,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "main()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ZbTfuKpvtAaI",
+        "outputId": "7ae47484-bd73-4ef1-e758-fe1c139f348a"
+      },
+      "execution_count": 28,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "\n",
+            "10 추가\n",
+            "29 추가\n",
+            "43 추가\n",
+            "10 29 43 \n",
+            "\n",
+            "\n",
+            "pop 0 index!!\n",
+            "10 43 \n",
+            "\n",
+            "\n",
+            "pop 1 index!!\n",
+            "43 \n",
+            "\n",
+            "\n",
+            "pop 0 index!!\n",
+            "\n",
+            "\n",
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        ""
+      ],
+      "metadata": {
+        "id": "7bwuuKkztBbN"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
